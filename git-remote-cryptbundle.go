@@ -20,7 +20,31 @@ type pushCommand struct {
 }
 
 func parsePushCommand(p string) *pushCommand {
-	return nil
+	ret := new(pushCommand)
+
+	if !strings.HasPrefix(p, "push ") {
+		return nil
+	}
+	p = p[5:]
+
+	if p == "" {
+		return nil
+	}
+
+	if p[0] == '+' {
+		ret.force = true
+		p = p[1:]
+	}
+
+	fields := strings.SplitN(p, ":", 2)
+	if len(fields) != 2 {
+		return nil
+	}
+
+	ret.src = fields[0]
+	ret.dst = fields[1]
+
+	return ret
 }
 
 func handlePushCommand(c *config, pc *pushCommand) error {
