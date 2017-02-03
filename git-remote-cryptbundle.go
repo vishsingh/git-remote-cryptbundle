@@ -27,7 +27,12 @@ func doIt() error {
 		}
 
 		if line == "capabilities" {
+			fmt.Print("push\n")
 			fmt.Print("\n")
+		} else if line == "list for-push" {
+			return fmt.Errorf("unimplemented")
+		} else if line == "push" {
+			return fmt.Errorf("unimplemented")
 		} else {
 			return fmt.Errorf("unknown command: %s", line)
 		}
