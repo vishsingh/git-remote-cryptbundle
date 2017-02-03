@@ -33,7 +33,8 @@ func doIt() error {
 			fmt.Print("push\n")
 			fmt.Print("\n")
 		} else if line == "list for-push" {
-			return fmt.Errorf("unimplemented")
+			// todo
+			fmt.Print("\n")
 		} else if strings.HasPrefix(line, "push ") {
 			return fmt.Errorf("push command unimplemented")
 		} else {
