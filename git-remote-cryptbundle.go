@@ -13,8 +13,8 @@ type config struct {
 	remoteUrl string
 }
 
-func handlePush(c *config, pushCommands []string) error {
-	return fmt.Errorf("unable to perform '%s' to remote '%s'", pushCommands[0], c.remoteUrl)
+func handlePush(c *config, pushCommands []string) {
+	panic("unimplemented")
 }
 
 // todo: check errors returned by fmt
