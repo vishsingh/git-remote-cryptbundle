@@ -22,7 +22,11 @@ func doIt() error {
 
 		line = line[0:len(line)-1]
 
-		fmt.Printf("I have read a line: '%s'\n", line)
+		if line == "capabilities" {
+			fmt.Print("\n")
+		} else {
+			return fmt.Errorf("unknown command: %s", line)
+		}
 	}
 
 	return nil
