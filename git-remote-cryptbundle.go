@@ -57,14 +57,24 @@ func doIt(args []string) error {
 		if line == "capabilities" {
 			fmt.Print("push\n")
 			fmt.Print("\n")
-		} else if line == "list for-push" {
+
+			continue
+		}
+
+		if line == "list for-push" {
 			// todo
 			fmt.Print("\n")
-		} else if strings.HasPrefix(line, "push ") {
-			pushCmds = append(pushCmds, line)
-		} else {
-			return fmt.Errorf("unknown command: %s", line)
+
+			continue
 		}
+
+		if strings.HasPrefix(line, "push ") {
+			pushCmds = append(pushCmds, line)
+
+			continue
+		}
+
+		return fmt.Errorf("unknown command: %s", line)
 	}
 
 	return nil
