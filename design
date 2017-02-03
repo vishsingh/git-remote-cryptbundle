@@ -1,0 +1,4 @@
+support push, based on local knowledge of what the last-bundle transmitted to the remote was
+    (e.g. git config remote.<name>.lastCryptBundle)
+
+don't forget to store a version number on the remote
