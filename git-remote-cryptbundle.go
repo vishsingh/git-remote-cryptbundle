@@ -13,6 +13,10 @@ type config struct {
 	remoteUrl string
 }
 
+func handlePush(c *config, pushCommand string) error {
+	return fmt.Errorf("unable to perform '%s' to remote '%s'", pushCommand, c.remoteUrl)
+}
+
 // todo: check errors returned by fmt
 
 func doIt(args []string) error {
@@ -50,7 +54,7 @@ func doIt(args []string) error {
 			// todo
 			fmt.Print("\n")
 		} else if strings.HasPrefix(line, "push ") {
-			return fmt.Errorf("push command unimplemented")
+			return handlePush(c, line)
 		} else {
 			return fmt.Errorf("unknown command: %s", line)
 		}
