@@ -32,13 +32,6 @@ func doIt(args []string) error {
 
 	r := bufio.NewReader(os.Stdin)
 
-	type readState int
-	const (
-		stateDefault readState = iota
-		stateReadPushCommands
-	)
-	s := stateDefault
-
 	for {
 		line, err := r.ReadString('\n')
 
@@ -50,26 +43,20 @@ func doIt(args []string) error {
 
 		line = line[0:len(line)-1]
 
-		switch s {
-		case stateDefault:
-			if line == "" {
-				continue
-			}
+		if line == "" {
+			continue
+		}
 
-			if line == "capabilities" {
-				fmt.Print("push\n")
-				fmt.Print("\n")
-			} else if line == "list for-push" {
-				// todo
-				fmt.Print("\n")
-			} else if strings.HasPrefix(line, "push ") {
-				return handlePush(c, line)
-			} else {
-				return fmt.Errorf("unknown command: %s", line)
-			}
-
-		default:
-			panic("unknown state encountered")
+		if line == "capabilities" {
+			fmt.Print("push\n")
+			fmt.Print("\n")
+		} else if line == "list for-push" {
+			// todo
+			fmt.Print("\n")
+		} else if strings.HasPrefix(line, "push ") {
+			return handlePush(c, line)
+		} else {
+			return fmt.Errorf("unknown command: %s", line)
 		}
 	}
 
