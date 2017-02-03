@@ -22,6 +22,10 @@ func doIt() error {
 
 		line = line[0:len(line)-1]
 
+		if line == "" {
+			continue
+		}
+
 		if line == "capabilities" {
 			fmt.Print("\n")
 		} else {
