@@ -9,6 +9,10 @@ import (
 	"strings"
 )
 
+type config struct {
+	remoteUrl string
+}
+
 // todo: check errors returned by fmt
 
 func doIt(args []string) error {
@@ -16,7 +20,11 @@ func doIt(args []string) error {
 		return fmt.Errorf("too few args")
 	}
 
-	log.Println("working with remote at URL:", args[2])
+	c := &config {
+		remoteUrl: args[2],
+	}
+
+	log.Println("working with remote at URL:", c.remoteUrl)
 
 	r := bufio.NewReader(os.Stdin)
 
