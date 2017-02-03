@@ -6,6 +6,7 @@ import (
 	"bufio"
 	"os"
 	"io"
+	"strings"
 )
 
 func doIt() error {
@@ -31,8 +32,8 @@ func doIt() error {
 			fmt.Print("\n")
 		} else if line == "list for-push" {
 			return fmt.Errorf("unimplemented")
-		} else if line == "push" {
-			return fmt.Errorf("unimplemented")
+		} else if strings.HasPrefix(line, "push ") {
+			return fmt.Errorf("push command unimplemented")
 		} else {
 			return fmt.Errorf("unknown command: %s", line)
 		}
