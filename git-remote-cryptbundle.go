@@ -9,6 +9,8 @@ import (
 	"strings"
 )
 
+// todo: check errors returned by fmt
+
 func doIt() error {
 	r := bufio.NewReader(os.Stdin)
 
