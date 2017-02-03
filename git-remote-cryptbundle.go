@@ -13,8 +13,8 @@ type config struct {
 	remoteUrl string
 }
 
-func handlePush(c *config, pushCommand string) error {
-	return fmt.Errorf("unable to perform '%s' to remote '%s'", pushCommand, c.remoteUrl)
+func handlePush(c *config, pushCommands []string) error {
+	return fmt.Errorf("unable to perform '%s' to remote '%s'", pushCommands[0], c.remoteUrl)
 }
 
 // todo: check errors returned by fmt
@@ -32,6 +32,8 @@ func doIt(args []string) error {
 
 	r := bufio.NewReader(os.Stdin)
 
+	pushCmds := []string{}
+
 	for {
 		line, err := r.ReadString('\n')
 
@@ -44,6 +46,11 @@ func doIt(args []string) error {
 		line = line[0:len(line)-1]
 
 		if line == "" {
+			if len(pushCmds) > 0 {
+				handlePush(c, pushCmds)
+				pushCmds = []string{}
+			}
+
 			continue
 		}
 
@@ -54,7 +61,7 @@ func doIt(args []string) error {
 			// todo
 			fmt.Print("\n")
 		} else if strings.HasPrefix(line, "push ") {
-			return handlePush(c, line)
+			pushCmds = append(pushCmds, line)
 		} else {
 			return fmt.Errorf("unknown command: %s", line)
 		}
