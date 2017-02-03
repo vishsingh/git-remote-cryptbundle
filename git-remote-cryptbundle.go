@@ -13,8 +13,41 @@ type config struct {
 	remoteUrl string
 }
 
+type pushCommand struct {
+	force bool
+	src string
+	dst string
+}
+
+func parsePushCommand(p string) *pushCommand {
+	return nil
+}
+
+func handlePushCommand(c *config, pc *pushCommand) error {
+	return fmt.Errorf("unable to execute push command %#v", pc)
+}
+
 func handlePush(c *config, pushCommands []string) {
-	panic("unimplemented")
+	for _, p := range pushCommands {
+		pc := parsePushCommand(p)
+		if pc == nil {
+			errStr := "unable to parse push command: " + p
+			fmt.Printf("error ??? %q\n", errStr)
+
+			continue
+		}
+
+		err := handlePushCommand(c, pc)
+		if err != nil {
+			fmt.Printf("error %s %q\n", pc.dst, err.Error())
+
+			continue
+		}
+
+		fmt.Printf("ok %s\n", pc.dst)
+	}
+
+	fmt.Printf("\n")
 }
 
 // todo: check errors returned by fmt
