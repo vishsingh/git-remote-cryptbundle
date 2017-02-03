@@ -11,7 +11,13 @@ import (
 
 // todo: check errors returned by fmt
 
-func doIt() error {
+func doIt(args []string) error {
+	if len(args) < 3 {
+		return fmt.Errorf("too few args")
+	}
+
+	log.Println("working with remote at URL:", args[2])
+
 	r := bufio.NewReader(os.Stdin)
 
 	for {
@@ -46,7 +52,7 @@ func doIt() error {
 }
 
 func main() {
-	err := doIt()
+	err := doIt(os.Args)
 
 	if err != nil {
 		log.Fatal(err)
