@@ -82,9 +82,35 @@ func handlePushCommand(c *config, pc *pushCommand) error {
 		return err
 	}
 
-	b, _ := ioutil.ReadAll(bundleStream)
-	numBytes := len(b)
-	log.Printf("Read %d bytes from stream\n", numBytes)
+	// todo
+	encryptionRecipient := "RockMan"
+
+	encryptCmd := exec.Command("gpg",
+		"--batch",
+		"--encrypt",
+		"--recipient", encryptionRecipient,
+		"--cipher-algo", "AES256",
+		"--force-mdc")
+
+	encryptCmd.Stdin = bundleStream
+
+	encryptedStream, err := encryptCmd.StdoutPipe()
+	if err != nil {
+		return err
+	}
+
+	encryptCmd.Stderr = os.Stderr
+
+	if err := encryptCmd.Start(); err != nil {
+		return err
+	}
+
+	b, _ := ioutil.ReadAll(encryptedStream)
+	log.Printf("Read %d bytes from encrypted stream\n", len(b))
+
+	if err := encryptCmd.Wait(); err != nil {
+		return err
+	}
 
 	if err := bundleCmd.Wait(); err != nil {
 		return err
