@@ -11,6 +11,19 @@ import (
 
 type config struct {
 	remoteUrl string
+	localGitDir string
+}
+
+func (c *config) Validate() error {
+	fi, err := os.Stat(c.localGitDir)
+	if err != nil {
+		return fmt.Errorf("GIT_DIR not valid: %s", err.Error())
+	}
+	if !fi.IsDir() {
+		return fmt.Errorf("GIT_DIR not actually a dir")
+	}
+
+	return nil
 }
 
 type pushCommand struct {
@@ -83,6 +96,11 @@ func doIt(args []string) error {
 
 	c := &config {
 		remoteUrl: args[2],
+		localGitDir: os.Getenv("GIT_DIR"),
+	}
+
+	if err := c.Validate(); err != nil {
+		return err
 	}
 
 	log.Println("working with remote at URL:", c.remoteUrl)
