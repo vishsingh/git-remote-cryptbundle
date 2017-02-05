@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"bufio"
 	"os"
+	"os/exec"
 	"io"
+	"io/ioutil"
 	"strings"
 )
 
@@ -61,7 +63,32 @@ func parsePushCommand(p string) *pushCommand {
 }
 
 func handlePushCommand(c *config, pc *pushCommand) error {
-	return fmt.Errorf("unable to execute push command %#v", pc)
+	// todo: last-bundle
+	cmd := exec.Command("git",
+		"--git-dir=" + c.localGitDir,
+		"bundle",
+		"create",
+		"-",
+		pc.src)
+
+	bundleStream, err := cmd.StdoutPipe()
+	if err != nil {
+		return err
+	}
+
+	if err := cmd.Start(); err != nil {
+		return err
+	}
+
+	b, _ := ioutil.ReadAll(bundleStream)
+	numBytes := len(b)
+	log.Printf("Read %d bytes from stream\n", numBytes)
+
+	if err := cmd.Wait(); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func handlePush(c *config, pushCommands []string) {
