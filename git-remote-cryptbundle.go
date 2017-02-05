@@ -64,21 +64,21 @@ func parsePushCommand(p string) *pushCommand {
 
 func handlePushCommand(c *config, pc *pushCommand) error {
 	// todo: last-bundle
-	cmd := exec.Command("git",
+	bundleCmd := exec.Command("git",
 		"--git-dir=" + c.localGitDir,
 		"bundle",
 		"create",
 		"-",
 		pc.src)
 
-	bundleStream, err := cmd.StdoutPipe()
+	bundleStream, err := bundleCmd.StdoutPipe()
 	if err != nil {
 		return err
 	}
 
-	cmd.Stderr = os.Stderr
+	bundleCmd.Stderr = os.Stderr
 
-	if err := cmd.Start(); err != nil {
+	if err := bundleCmd.Start(); err != nil {
 		return err
 	}
 
@@ -86,7 +86,7 @@ func handlePushCommand(c *config, pc *pushCommand) error {
 	numBytes := len(b)
 	log.Printf("Read %d bytes from stream\n", numBytes)
 
-	if err := cmd.Wait(); err != nil {
+	if err := bundleCmd.Wait(); err != nil {
 		return err
 	}
 
