@@ -6,6 +6,7 @@ import (
 	"bufio"
 	"os"
 	"os/exec"
+	"context"
 	"io"
 	"io/ioutil"
 	"strings"
@@ -63,8 +64,11 @@ func parsePushCommand(p string) *pushCommand {
 }
 
 func handlePushCommand(c *config, pc *pushCommand) error {
+	ctx, ctxDoneFunc := context.WithCancel(context.Background())
+	defer ctxDoneFunc()
+
 	// todo: last-bundle
-	bundleCmd := exec.Command("git",
+	bundleCmd := exec.CommandContext(ctx, "git",
 		"--git-dir=" + c.localGitDir,
 		"bundle",
 		"create",
@@ -85,7 +89,7 @@ func handlePushCommand(c *config, pc *pushCommand) error {
 	// todo
 	encryptionRecipient := "RockMan"
 
-	encryptCmd := exec.Command("gpg",
+	encryptCmd := exec.CommandContext(ctx, "gpg",
 		"--batch",
 		"--encrypt",
 		"--recipient", encryptionRecipient,
