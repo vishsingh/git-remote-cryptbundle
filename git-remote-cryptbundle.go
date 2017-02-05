@@ -76,6 +76,8 @@ func handlePushCommand(c *config, pc *pushCommand) error {
 		return err
 	}
 
+	cmd.Stderr = os.Stderr
+
 	if err := cmd.Start(); err != nil {
 		return err
 	}
