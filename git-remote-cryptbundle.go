@@ -14,6 +14,7 @@ import (
 
 type config struct {
 	remoteUrl string
+	remote Remote
 	localGitDir string
 }
 
@@ -25,6 +26,17 @@ func (c *config) Validate() error {
 	if !fi.IsDir() {
 		return fmt.Errorf("GIT_DIR not actually a dir")
 	}
+
+	return nil
+}
+
+func (c *config) EvalRemote() error {
+	remote, err := parseRemoteUrl(c.remoteUrl)
+	if err != nil {
+		return err
+	}
+
+	c.remote = remote
 
 	return nil
 }
@@ -159,6 +171,10 @@ func doIt(args []string) error {
 	}
 
 	if err := c.Validate(); err != nil {
+		return err
+	}
+
+	if err := c.EvalRemote(); err != nil {
 		return err
 	}
 
