@@ -70,19 +70,23 @@ func TestFsRemoteGetBundles(t *testing.T) {
 		return nil
 	}
 
-	err = touch("00000000.bundle.gpg")
+	const file1 = "00000000.bundle.gpg"
+
+	err = touch(file1)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	expectBundles("00000000.bundle.gpg")
+	expectBundles(file1)
 
-	err = touch("0000000.bundle.gpg")
+	const file2 = "0000000.bundle.gpg"
+
+	err = touch(file2)
 	if err != nil {
 		t.Error(err)
 		return
 	}
 
-	expectBundles("00000000.bundle.gpg")
+	expectBundles(file1)
 }
