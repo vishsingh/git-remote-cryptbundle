@@ -61,23 +61,28 @@ func TestFsRemoteGetBundles(t *testing.T) {
 
 	expectBundles()
 
-	var newfd *os.File
+	touch := func (name string) error {
+		newfd, err := os.Create(workDir + "/" + name)
+		if err != nil {
+			return err
+		}
+		newfd.Close()
+		return nil
+	}
 
-	newfd, err = os.Create(workDir + "/00000000.bundle.gpg")
+	err = touch("00000000.bundle.gpg")
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	newfd.Close()
 
 	expectBundles("00000000.bundle.gpg")
 
-	newfd, err = os.Create(workDir + "/0000000.bundle.gpg")
+	err = touch("0000000.bundle.gpg")
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	newfd.Close()
 
 	expectBundles("00000000.bundle.gpg")
 }
