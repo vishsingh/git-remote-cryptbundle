@@ -5,6 +5,7 @@ import (
 	"strings"
 	"os"
 	"fmt"
+	"regexp"
 )
 
 type Remote interface {
@@ -35,8 +36,27 @@ func (r *fsRemote) Unlock() error {
 	return os.Remove(r.path + "/lock")
 }
 
+var bundleNameRegex = regexp.MustCompile(`^[0-9]{8}\.bundle\.gpg$`)
+
 func (r *fsRemote) GetBundles() ([]string, error) {
-	return nil, fmt.Errorf("fsRemote: GetBundles unimplemented")
+	fd, err := os.Open(r.path)
+	if err != nil {
+		return nil, err
+	}
+
+	names, err := fd.Readdirnames(-1)
+	if err != nil {
+		return nil, err
+	}
+
+	bundleNames := []string{}
+	for _, name := range names {
+		if bundleNameRegex.MatchString(name) {
+			bundleNames = append(bundleNames, name)
+		}
+	}
+
+	return bundleNames, nil
 }
 
 func (r *fsRemote) PushBundle(ebs io.Reader) (string, error) {
