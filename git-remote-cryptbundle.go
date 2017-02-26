@@ -8,7 +8,6 @@ import (
 	"os/exec"
 	"context"
 	"io"
-	"io/ioutil"
 	"strings"
 )
 
@@ -125,8 +124,9 @@ func handlePushCommand(c *config, pc *pushCommand) error {
 		return err
 	}
 
-	b, _ := ioutil.ReadAll(encryptedStream)
-	log.Printf("Read %d bytes from encrypted stream\n", len(b))
+	if _, err := c.remote.PushBundle(encryptedStream); err != nil {
+		return err
+	}
 
 	if err := encryptCmd.Wait(); err != nil {
 		return err
