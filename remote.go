@@ -110,6 +110,8 @@ func (r *fsRemote) PushBundle(ebs io.Reader) (string, error) {
 		return "", err
 	}
 
+	f.Sync()
+
 	// clear write bit
 	if err := f.Chmod(0400); err != nil {
 		return "", err
