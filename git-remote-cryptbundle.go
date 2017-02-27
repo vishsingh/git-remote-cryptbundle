@@ -150,6 +150,20 @@ func evaluateRef(gitDir string, ref string) (string, error) {
 	return outs, nil
 }
 
+func refsEqual(gitDir string, refA string, refB string) (bool, error) {
+	refAEval, err := evaluateRef(gitDir, refA)
+	if err != nil {
+		return false, err
+	}
+
+	refBEval, err := evaluateRef(gitDir, refB)
+	if err != nil {
+		return false, err
+	}
+
+	return refAEval == refBEval, nil
+}
+
 // Perform the actual push, updating pc.dst on the destination with pc.src acquired from the local repo.
 // todo: force only if pc.force is set
 func handlePushCommand(c *config, pc *pushCommand) error {
@@ -158,12 +172,23 @@ func handlePushCommand(c *config, pc *pushCommand) error {
 
 	// use the remote tracking branch, for now. later we will want to decrypt a refs list from the remote. (todo)
 
+	nothingToDo := false
+
 	var bundleRevList string
 	if localRef, err := localRefTrackingRemoteRef(c, pc.dst); err == nil {
+		if eq, _ := refsEqual(c.localGitDir, localRef, pc.src); eq {
+			nothingToDo = true
+		}
+
 		bundleRevList = localRef + ".." + pc.src
 	} else {
 		bundleRevList = pc.src
 		log.Printf("uploading full bundle as no local ref found that tracks remote ref %q\n", pc.dst)
+	}
+
+	if nothingToDo {
+		log.Printf("remote tracking branch is up to date: nothing to do\n")
+		return nil
 	}
 
 	bundleCmd := exec.CommandContext(ctx, "git",
