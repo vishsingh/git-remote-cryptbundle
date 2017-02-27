@@ -74,6 +74,8 @@ func parsePushCommand(p string) *pushCommand {
 	return ret
 }
 
+// Perform the actual push, updating pc.dst on the destination with pc.src acquired from the local repo.
+// todo: force only if pc.force is set
 func handlePushCommand(c *config, pc *pushCommand) error {
 	ctx, ctxDoneFunc := context.WithCancel(context.Background())
 	defer ctxDoneFunc()
