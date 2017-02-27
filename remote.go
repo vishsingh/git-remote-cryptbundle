@@ -110,17 +110,17 @@ func (r *fsRemote) PushBundle(ebs io.Reader) (string, error) {
 		return "", err
 	}
 
-	// atomically rename to desired filename
-	if err := os.Rename(temporaryFilepath, desiredFilepath); err != nil {
-		return "", err
-	}
-
 	// clear write bit
 	if err := f.Chmod(0400); err != nil {
 		return "", err
 	}
 
 	if err := f.Close(); err != nil {
+		return "", err
+	}
+
+	// atomically rename to desired filename
+	if err := os.Rename(temporaryFilepath, desiredFilepath); err != nil {
 		return "", err
 	}
 
