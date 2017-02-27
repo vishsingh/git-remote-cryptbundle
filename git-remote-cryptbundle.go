@@ -113,19 +113,65 @@ func parsePushCommand(p string) *pushCommand {
 	return ret
 }
 
+func localRefTrackingRemoteRef(c *config, remoteRef string) (string, error) {
+	// refs/heads/master -> refs/remotes/{c.remoteName}/master
+
+	const prefix = "refs/heads/"
+
+	if !strings.HasPrefix(remoteRef, prefix) {
+		return "", fmt.Errorf("unable to determine local ref tracking remote ref %q", remoteRef)
+	}
+
+	branchName := remoteRef[len(prefix):]
+
+	ref := "refs/remotes/" + c.remoteName + "/" + branchName
+	if _, err := evaluateRef(c.localGitDir, ref); err != nil {
+		return "", fmt.Errorf("ref %s does not exist", ref)
+	}
+
+	return ref, nil
+}
+
+func evaluateRef(gitDir string, ref string) (string, error) {
+	cmd := exec.Command("git",
+		"--git-dir=" + gitDir,
+		"rev-parse",
+		"--verify",
+		"--quiet",
+		ref)
+
+	out, err := cmd.Output()
+	if err != nil {
+		return "", err
+	}
+
+	outs := strings.TrimSpace(string(out))
+
+	return outs, nil
+}
+
 // Perform the actual push, updating pc.dst on the destination with pc.src acquired from the local repo.
 // todo: force only if pc.force is set
 func handlePushCommand(c *config, pc *pushCommand) error {
 	ctx, ctxDoneFunc := context.WithCancel(context.Background())
 	defer ctxDoneFunc()
 
-	// todo: last-bundle
+	// use the remote tracking branch, for now. later we will want to decrypt a refs list from the remote. (todo)
+
+	var bundleRevList string
+	if localRef, err := localRefTrackingRemoteRef(c, pc.dst); err == nil {
+		bundleRevList = localRef + ".." + pc.src
+	} else {
+		bundleRevList = pc.src
+		log.Printf("uploading full bundle as no local ref found that tracks remote ref %q\n", pc.dst)
+	}
+
 	bundleCmd := exec.CommandContext(ctx, "git",
 		"--git-dir=" + c.localGitDir,
 		"bundle",
 		"create",
 		"-",
-		pc.src)
+		bundleRevList)
 
 	bundleStream, err := bundleCmd.StdoutPipe()
 	if err != nil {
