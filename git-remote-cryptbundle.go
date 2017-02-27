@@ -12,9 +12,44 @@ import (
 )
 
 type config struct {
+	// Name of remote, passed as the first argument to a remote helper.
+	remoteName string
+
 	remoteUrl string
 	remote Remote
 	localGitDir string
+}
+
+func gitListRemotes(gitDir string) ([]string, error) {
+	cmd := exec.Command("git",
+		"--git-dir=" + gitDir,
+		"remote")
+
+	out, err := cmd.Output()
+	if err != nil {
+		return nil, err
+	}
+
+	outs := strings.TrimSpace(string(out))
+
+	outlines := strings.Split(outs, "\n")
+
+	return outlines, nil
+}
+
+func gitAssertRemote(gitDir string, remoteName string) error {
+	remotes, err := gitListRemotes(gitDir)
+	if err != nil {
+		return err
+	}
+
+	for _, r := range remotes {
+		if r == remoteName {
+			return nil
+		}
+	}
+
+	return fmt.Errorf("repo at %s does not contain a remote named %q", gitDir, remoteName)
 }
 
 func (c *config) Validate() error {
@@ -24,6 +59,10 @@ func (c *config) Validate() error {
 	}
 	if !fi.IsDir() {
 		return fmt.Errorf("GIT_DIR not actually a dir")
+	}
+
+	if err := gitAssertRemote(c.localGitDir, c.remoteName); err != nil {
+		return fmt.Errorf("unable to verify existence of remote named %q: %s", c.remoteName, err.Error())
 	}
 
 	return nil
@@ -179,6 +218,7 @@ func doIt(args []string) error {
 	}
 
 	c := &config {
+		remoteName: "",
 		remoteUrl: args[2],
 		localGitDir: os.Getenv("GIT_DIR"),
 	}
