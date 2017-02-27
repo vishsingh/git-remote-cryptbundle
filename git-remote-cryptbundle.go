@@ -218,7 +218,7 @@ func doIt(args []string) error {
 	}
 
 	c := &config {
-		remoteName: "",
+		remoteName: args[1],
 		remoteUrl: args[2],
 		localGitDir: os.Getenv("GIT_DIR"),
 	}
