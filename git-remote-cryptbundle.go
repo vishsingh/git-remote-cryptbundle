@@ -248,6 +248,10 @@ func handlePushCommand(c *config, pc *pushCommand) error {
 		return err
 	}
 
+	if err := c.remote.CommitBundle(); err != nil {
+		return err
+	}
+
 	// Only unlock if we get to the end with no errors.
 	// Leaving the remote in a locked state is an indication that
 	// something went wrong during the last push.

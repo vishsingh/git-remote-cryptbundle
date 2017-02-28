@@ -14,11 +14,17 @@ type Remote interface {
 	Unlock() error
 
 	GetBundles() (bundleNames []string, err error)
+
+	// Pushes bundle to remote, but does not yet commit it.
 	PushBundle(encryptedBundleStream io.Reader) (newBundleName string, err error)
+
+	// Commit the bundle that was last successfully pushed.
+	CommitBundle() error
 }
 
 type fsRemote struct {
 	path string
+	commitFunc func() error
 }
 
 func (r *fsRemote) Lock() error {
@@ -87,6 +93,8 @@ func (r *fsRemote) GetBundles() ([]string, error) {
 }
 
 func (r *fsRemote) PushBundle(ebs io.Reader) (string, error) {
+	r.commitFunc = nil
+
 	// determine new filename based on existing bundles
 	existingBundles, err := r.GetBundles()
 	if err != nil {
@@ -121,12 +129,27 @@ func (r *fsRemote) PushBundle(ebs io.Reader) (string, error) {
 		return "", err
 	}
 
-	// atomically rename to desired filename
-	if err := os.Rename(temporaryFilepath, desiredFilepath); err != nil {
-		return "", err
+	r.commitFunc = func() error {
+		// atomically rename to desired filename
+		if err := os.Rename(temporaryFilepath, desiredFilepath); err != nil {
+			return err
+		}
+
+		return nil
 	}
 
 	return desiredFilename, nil
+}
+
+func (r *fsRemote) CommitBundle() error {
+	if r.commitFunc == nil {
+		return fmt.Errorf("CommitBundle() called without prior successful call to PushBundle()")
+	}
+
+	f := r.commitFunc
+	r.commitFunc = nil
+
+	return f()
 }
 
 func parseRemoteUrl(remoteUrl string) (Remote, error) {
