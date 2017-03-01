@@ -159,8 +159,10 @@ func parseRemoteUrl(remoteUrl string) (Remote, error) {
 		}, nil
 	}
 
-	if strings.HasPrefix(remoteUrl, "sshfs://") {
+	const sp = "sshfs://"
+	if strings.HasPrefix(remoteUrl, sp) {
 		return &sshfsRemote {
+			url: strings.TrimPrefix(remoteUrl, sp),
 		}, nil
 	}
 

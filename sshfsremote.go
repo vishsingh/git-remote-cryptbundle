@@ -10,6 +10,10 @@ import (
 )
 
 type sshfsRemote struct {
+	// The information required to mount the sshfs remote.
+	// Will be the first argument passed to the 'sshfs' command.
+	// Looks like: user@host:dir
+	url string
 }
 
 func (*sshfsRemote) errNotImpl(method string) error {
