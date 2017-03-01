@@ -159,5 +159,10 @@ func parseRemoteUrl(remoteUrl string) (Remote, error) {
 		}, nil
 	}
 
+	if strings.HasPrefix(remoteUrl, "sshfs://") {
+		return &sshfsRemote {
+		}, nil
+	}
+
 	return nil, fmt.Errorf("unable to parse remote url %q", remoteUrl)
 }
