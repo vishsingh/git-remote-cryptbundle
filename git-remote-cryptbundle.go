@@ -287,27 +287,7 @@ func handlePush(c *config, pushCommands []string) {
 
 // todo: check errors returned by fmt
 
-func doIt(args []string) error {
-	if len(args) < 3 {
-		return fmt.Errorf("too few args")
-	}
-
-	c := &config {
-		remoteName: args[1],
-		remoteUrl: args[2],
-		localGitDir: os.Getenv("GIT_DIR"),
-	}
-
-	if err := c.Validate(); err != nil {
-		return err
-	}
-
-	if err := c.EvalRemote(); err != nil {
-		return err
-	}
-
-	log.Println("working with remote at URL:", c.remoteUrl)
-
+func processInput(c *config) error {
 	r := bufio.NewReader(os.Stdin)
 
 	pushCmds := []string{}
@@ -356,6 +336,30 @@ func doIt(args []string) error {
 	}
 
 	return nil
+}
+
+func doIt(args []string) error {
+	if len(args) < 3 {
+		return fmt.Errorf("too few args")
+	}
+
+	c := &config {
+		remoteName: args[1],
+		remoteUrl: args[2],
+		localGitDir: os.Getenv("GIT_DIR"),
+	}
+
+	if err := c.Validate(); err != nil {
+		return err
+	}
+
+	if err := c.EvalRemote(); err != nil {
+		return err
+	}
+
+	log.Println("working with remote at URL:", c.remoteUrl)
+
+	return processInput(c)
 }
 
 func main() {
