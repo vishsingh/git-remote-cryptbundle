@@ -338,6 +338,22 @@ func processInput(c *config) error {
 	return nil
 }
 
+type combinedError struct {
+	processInputErr error
+	uninitErr error
+}
+
+func (e *combinedError) Error() string {
+	errDesc := ""
+	if e.processInputErr != nil {
+		errDesc += fmt.Sprintf("processInput failed: %v; also, ", e.processInputErr)
+	}
+
+	errDesc += fmt.Sprintf("failed to uninitialize remote: %v", e.uninitErr)
+
+	return errDesc
+}
+
 func doIt(args []string) error {
 	if len(args) < 3 {
 		return fmt.Errorf("too few args")
@@ -359,7 +375,20 @@ func doIt(args []string) error {
 
 	log.Println("working with remote at URL:", c.remoteUrl)
 
-	return processInput(c)
+	if err := c.remote.Init(); err != nil {
+		return fmt.Errorf("failed to initialize remote: %v", err)
+	}
+
+	err := processInput(c)
+
+	if uninitErr := c.remote.Uninit(); uninitErr != nil {
+		err = &combinedError {
+			processInputErr: err,
+			uninitErr: uninitErr,
+		}
+	}
+
+	return err
 }
 
 func main() {

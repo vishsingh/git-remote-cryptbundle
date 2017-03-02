@@ -10,6 +10,9 @@ import (
 )
 
 type Remote interface {
+	Init() error
+	Uninit() error
+
 	Lock() error
 	Unlock() error
 
@@ -25,6 +28,14 @@ type Remote interface {
 type fsRemote struct {
 	path string
 	commitFunc func() error
+}
+
+func (*fsRemote) Init() error {
+	return nil
+}
+
+func (*fsRemote) Uninit() error {
+	return nil
 }
 
 func (r *fsRemote) Lock() error {

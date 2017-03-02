@@ -20,6 +20,14 @@ func (*sshfsRemote) errNotImpl(method string) error {
 	return fmt.Errorf("sshfsRemote %s(): Not implemented", method)
 }
 
+func (r *sshfsRemote) Init() error {
+	return r.errNotImpl("Init")
+}
+
+func (r *sshfsRemote) Uninit() error {
+	return r.errNotImpl("Uninit")
+}
+
 func (r *sshfsRemote) Lock() error {
 	return r.errNotImpl("Lock")
 }
