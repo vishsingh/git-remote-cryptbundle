@@ -27,6 +27,23 @@ func (*sshfsRemote) errNotImpl(method string) error {
 	return fmt.Errorf("sshfsRemote %s(): Not implemented", method)
 }
 
+func sshfsCmd(url string, mountPoint string) *exec.Cmd {
+	mountCmd := exec.Command("sshfs", url, mountPoint)
+
+	options := []string{
+		"reconnect",
+		"sshfs_sync",
+		"no_readahead",
+		"sync_readdir",
+	}
+
+	for _, option := range options {
+		mountCmd.Args = append(mountCmd.Args, "-o", option)
+	}
+
+	return mountCmd
+}
+
 func (r *sshfsRemote) Init() error {
 	// mkdir <mountpoint>
 	// sshfs <r.url> <mountpoint> <mount-options>
@@ -49,9 +66,7 @@ func (r *sshfsRemote) Init() error {
 
 	r.mountPoint = mountPoint
 
-	mountCmd := exec.Command("sshfs",
-		r.url,
-		mountPoint) // todo: options
+	mountCmd := sshfsCmd(r.url, mountPoint)
 
 	out, err := mountCmd.CombinedOutput()
 	if err != nil {
