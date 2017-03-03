@@ -48,6 +48,10 @@ func (r *sshfsRemote) Init() error {
 	// mkdir <mountpoint>
 	// sshfs <r.url> <mountpoint> <mount-options>
 
+	if r.mountPoint != "" || r.mounted {
+		return fmt.Errorf("sshfsRemote already initialized")
+	}
+
 	if r.url == "" {
 		return fmt.Errorf("sshfsRemote given empty URL")
 	}
@@ -70,10 +74,23 @@ func (r *sshfsRemote) Init() error {
 
 	out, err := mountCmd.CombinedOutput()
 	if err != nil {
+		r.removeMountPoint()
 		return fmt.Errorf("failed to mount sshfs: %q", string(out))
 	}
 
 	r.mounted = true
+
+	return nil
+}
+
+func (r *sshfsRemote) removeMountPoint() error {
+	if r.mountPoint != "" {
+		if err := os.Remove(r.mountPoint); err != nil {
+			return fmt.Errorf("failed to remove sshfs mountpoint: %v", err)
+		}
+
+		r.mountPoint = ""
+	}
 
 	return nil
 }
@@ -95,15 +112,7 @@ func (r *sshfsRemote) Uninit() error {
 		r.mounted = false
 	}
 
-	if r.mountPoint != "" {
-		if err := os.Remove(r.mountPoint); err != nil {
-			return fmt.Errorf("failed to remove sshfs mountpoint: %v", err)
-		}
-
-		r.mountPoint = ""
-	}
-
-	return nil
+	return r.removeMountPoint()
 }
 
 func (r *sshfsRemote) Lock() error {
