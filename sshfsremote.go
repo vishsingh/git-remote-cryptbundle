@@ -21,6 +21,8 @@ type sshfsRemote struct {
 
 	// True while SSHFS is mounted.
 	mounted bool
+
+	inner Remote
 }
 
 func (*sshfsRemote) errNotImpl(method string) error {
@@ -80,7 +82,11 @@ func (r *sshfsRemote) Init() error {
 
 	r.mounted = true
 
-	return nil
+	r.inner = &fsRemote {
+		path: mountPoint,
+	}
+
+	return r.inner.Init()
 }
 
 func (r *sshfsRemote) removeMountPoint() error {
@@ -99,6 +105,14 @@ func (r *sshfsRemote) Uninit() error {
 	// fusermount -u <mountpoint>
 	// rmdir <mountpoint>
 
+	if r.inner != nil {
+		if err := r.inner.Uninit(); err != nil {
+			return err
+		}
+
+		r.inner = nil
+	}
+
 	if r.mounted {
 		unmountCmd := exec.Command("fusermount",
 			"-u",
@@ -116,21 +130,21 @@ func (r *sshfsRemote) Uninit() error {
 }
 
 func (r *sshfsRemote) Lock() error {
-	return r.errNotImpl("Lock")
+	return r.inner.Lock()
 }
 
 func (r *sshfsRemote) Unlock() error {
-	return r.errNotImpl("Unlock")
+	return r.inner.Unlock()
 }
 
 func (r *sshfsRemote) GetBundles() ([]string, error) {
-	return nil, r.errNotImpl("GetBundles")
+	return r.inner.GetBundles()
 }
 
-func (r *sshfsRemote) PushBundle(io.Reader) (string, error) {
-	return "", r.errNotImpl("PushBundle")
+func (r *sshfsRemote) PushBundle(ebs io.Reader) (string, error) {
+	return r.inner.PushBundle(ebs)
 }
 
 func (r *sshfsRemote) CommitBundle() error {
-	return r.errNotImpl("CommitBundle")
+	return r.inner.CommitBundle()
 }
