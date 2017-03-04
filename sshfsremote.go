@@ -133,6 +133,7 @@ func (r *sshfsRemote) unMountRepeatedly(numTries int) (err error) {
 		numTries = 1
 	}
 
+RetryLoop:
 	for i := 0; i < numTries; i++ {
 		if i != 0 {
 			log.Printf("failed to unmount sshfs; trying again in one second\n")
@@ -145,7 +146,7 @@ func (r *sshfsRemote) unMountRepeatedly(numTries int) (err error) {
 		case deviceOrResourceBusy:
 			continue
 		default:
-			break
+			break RetryLoop
 		}
 	}
 
