@@ -89,6 +89,23 @@ func (r *sshfsRemote) Init() error {
 	return r.inner.Init()
 }
 
+func (r *sshfsRemote) unMount() error {
+	if r.mounted {
+		unmountCmd := exec.Command("fusermount",
+			"-u",
+			r.mountPoint)
+
+		out, err := unmountCmd.CombinedOutput()
+		if err != nil {
+			return fmt.Errorf("failed to unmount sshfs: %q", string(out))
+		}
+
+		r.mounted = false
+	}
+
+	return nil
+}
+
 func (r *sshfsRemote) removeMountPoint() error {
 	if r.mountPoint != "" {
 		if err := os.Remove(r.mountPoint); err != nil {
@@ -113,17 +130,8 @@ func (r *sshfsRemote) Uninit() error {
 		r.inner = nil
 	}
 
-	if r.mounted {
-		unmountCmd := exec.Command("fusermount",
-			"-u",
-			r.mountPoint)
-
-		out, err := unmountCmd.CombinedOutput()
-		if err != nil {
-			return fmt.Errorf("failed to unmount sshfs: %q", string(out))
-		}
-
-		r.mounted = false
+	if err := r.unMount(); err != nil {
+		return err
 	}
 
 	return r.removeMountPoint()
