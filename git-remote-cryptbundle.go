@@ -164,6 +164,26 @@ func refsEqual(gitDir string, refA string, refB string) (bool, error) {
 	return refAEval == refBEval, nil
 }
 
+func getEncryptionRecipient(gitDir string, remoteName string) (string, error) {
+	cmd := exec.Command("git",
+		"--git-dir=" + gitDir,
+		"config",
+		"--get",
+		"remote." + remoteName + ".encryptionRecipient")
+
+	out, err := cmd.Output()
+	if err != nil {
+		return "", fmt.Errorf("unable to determine encryption recipient for remote %q", remoteName)
+	}
+
+	outs := strings.TrimSpace(string(out))
+	if outs == "" {
+		return "", fmt.Errorf("encryption recipient for remote %q was empty", remoteName)
+	}
+
+	return outs, nil
+}
+
 // Perform the actual push, updating pc.dst on the destination with pc.src acquired from the local repo.
 // todo: force only if pc.force is set
 func handlePushCommand(c *config, pc *pushCommand) error {
@@ -209,8 +229,10 @@ func handlePushCommand(c *config, pc *pushCommand) error {
 		return err
 	}
 
-	// todo
-	encryptionRecipient := "RockMan"
+	encryptionRecipient, err := getEncryptionRecipient(c.localGitDir, c.remoteName)
+	if err != nil {
+		return err
+	}
 
 	encryptCmd := exec.CommandContext(ctx, "gpg",
 		"--batch",
