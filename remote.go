@@ -88,6 +88,7 @@ func (r *fsRemote) GetBundles() ([]string, error) {
 		return nil, err
 	}
 
+	defer fd.Close()
 	names, err := fd.Readdirnames(-1)
 	if err != nil {
 		return nil, err
