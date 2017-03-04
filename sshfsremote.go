@@ -2,12 +2,13 @@ package main
 
 import (
 	"io"
-	//"strings"
+	"strings"
 	"os"
 	"fmt"
-	//"regexp"
-	//"strconv"
 	"os/exec"
+	"errors"
+	"log"
+	"time"
 )
 
 type sshfsRemote struct {
@@ -89,6 +90,9 @@ func (r *sshfsRemote) Init() error {
 	return r.inner.Init()
 }
 
+const deviceOrResourceBusyString = "Device or resource busy"
+var deviceOrResourceBusy = errors.New(deviceOrResourceBusyString)
+
 func (r *sshfsRemote) unMount() error {
 	if r.mounted {
 		unmountCmd := exec.Command("fusermount",
@@ -97,7 +101,13 @@ func (r *sshfsRemote) unMount() error {
 
 		out, err := unmountCmd.CombinedOutput()
 		if err != nil {
-			return fmt.Errorf("failed to unmount sshfs: %q", string(out))
+			outs := string(out)
+
+			if strings.Contains(outs, deviceOrResourceBusyString) {
+				return deviceOrResourceBusy
+			}
+
+			return fmt.Errorf("failed to unmount sshfs: %q", outs)
 		}
 
 		r.mounted = false
@@ -118,6 +128,30 @@ func (r *sshfsRemote) removeMountPoint() error {
 	return nil
 }
 
+func (r *sshfsRemote) unMountRepeatedly(numTries int) (err error) {
+	if numTries <= 0 {
+		numTries = 1
+	}
+
+	for i := 0; i < numTries; i++ {
+		if i != 0 {
+			log.Printf("failed to unmount sshfs; trying again in one second\n")
+			time.Sleep(1 * time.Second)
+		}
+
+		err = r.unMount()
+
+		switch err {
+		case deviceOrResourceBusy:
+			continue
+		default:
+			break
+		}
+	}
+
+	return
+}
+
 func (r *sshfsRemote) Uninit() error {
 	// fusermount -u <mountpoint>
 	// rmdir <mountpoint>
@@ -130,7 +164,7 @@ func (r *sshfsRemote) Uninit() error {
 		r.inner = nil
 	}
 
-	if err := r.unMount(); err != nil {
+	if err := r.unMountRepeatedly(60); err != nil {
 		return err
 	}
 
