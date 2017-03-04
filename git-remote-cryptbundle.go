@@ -18,6 +18,9 @@ type config struct {
 	remoteUrl string
 	remote Remote
 	localGitDir string
+
+	// Turns on detailed logging.
+	verbose bool
 }
 
 func gitListRemotes(gitDir string) ([]string, error) {
@@ -395,7 +398,9 @@ func doIt(args []string) error {
 		return err
 	}
 
-	log.Println("working with remote at URL:", c.remoteUrl)
+	if c.verbose {
+		log.Println("working with remote at URL:", c.remoteUrl)
+	}
 
 	if err := c.remote.Init(); err != nil {
 		return fmt.Errorf("failed to initialize remote: %v", err)
