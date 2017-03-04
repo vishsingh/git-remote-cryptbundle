@@ -52,7 +52,7 @@ func gitAssertRemote(gitDir string, remoteName string) error {
 	return fmt.Errorf("repo at %s does not contain a remote named %q", gitDir, remoteName)
 }
 
-func (c *config) Validate() error {
+func (c *config) Check() error {
 	fi, err := os.Stat(c.localGitDir)
 	if err != nil {
 		return fmt.Errorf("GIT_DIR not valid: %s", err.Error())
@@ -365,7 +365,7 @@ func doIt(args []string) error {
 		localGitDir: os.Getenv("GIT_DIR"),
 	}
 
-	if err := c.Validate(); err != nil {
+	if err := c.Check(); err != nil {
 		return err
 	}
 
