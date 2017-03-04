@@ -414,6 +414,8 @@ func doIt(args []string) error {
 }
 
 func main() {
+	log.SetPrefix("git-remote-cryptbundle: ")
+
 	err := doIt(os.Args)
 
 	if err != nil {
